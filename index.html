@@ -647,37 +647,70 @@ function openEditModal(index, field) {
 }
 
 function openPromoModal(item) {
-    modalType = 'promo';
+    modalType = 'promo'; 
     editIndex = null;
 
     // 隱藏數字鍵盤
     document.getElementById("numpad").style.display = 'none';
 
-    // 顯示優惠方案按鈕容器
     const promoDiv = document.getElementById("promoButtons");
     promoDiv.style.display = 'grid';
-    promoDiv.innerHTML = ''; // 清空舊按鈕
+    promoDiv.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))'; // 自動換行
+    promoDiv.style.gap = '10px'; // 按鈕間距
+    promoDiv.style.padding = '15px';
+    promoDiv.innerHTML = '';
 
-    // 定義優惠方案
+    // 設置彈窗樣式
+    const editModal = document.getElementById("editModal");
+    editModal.style.display = 'flex';
+    editModal.style.justifyContent = 'center';
+    editModal.style.alignItems = 'center';
+    editModal.style.backgroundColor = 'rgba(0,0,0,0.5)'; // 半透明背景
+    editModal.style.padding = '20px';
+
+    const promoContent = document.createElement('div');
+    promoContent.style.backgroundColor = '#fff';
+    promoContent.style.borderRadius = '10px';
+    promoContent.style.padding = '20px';
+    promoContent.style.maxWidth = '400px';
+    promoContent.style.width = '90%';
+    promoContent.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+    promoContent.id = 'promoContent';
+
+    // 商品名稱標題
+    const title = document.createElement('h3');
+    title.innerText = item.name;
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '15px';
+    promoContent.appendChild(title);
+
+    // 優惠方案按鈕
     const promoList = [
-        { name: '95折', rate: 0.95 }, 
-        { name: '9折', rate: 0.9 }, 
-        { name: '85折', rate: 0.85 }, 
+        { name: '95折', rate: 0.95 },
+        { name: '9折', rate: 0.9 },
+        { name: '85折', rate: 0.85 },
         { name: '8折', rate: 0.8 },
-        { name: '7折', rate: 0.7 }, 
-        { name: '6折', rate: 0.6 }, 
-        { name: '買一送一', type: '買一送一' }, 
+        { name: '7折', rate: 0.7 },
+        { name: '6折', rate: 0.6 },
+        { name: '買一送一', type: '買一送一' },
         { name: '買二送一', type: '買二送一' },
-        { name: '第二件減10', type: '第二件減10' }, 
+        { name: '第二件減10', type: '第二件減10' },
         { name: '第二件6折', type: '第二件6折' }
     ];
 
-    // 生成優惠方案按鈕
     promoList.forEach(p => {
         const btn = document.createElement('button');
         btn.innerText = p.name;
+        btn.style.padding = '10px 5px';
+        btn.style.fontSize = '16px';
+        btn.style.cursor = 'pointer';
+        btn.style.borderRadius = '5px';
+        btn.style.border = '1px solid #ccc';
+        btn.style.backgroundColor = '#f9f9f9';
+        btn.style.transition = '0.2s';
+        btn.onmouseover = () => btn.style.backgroundColor = '#e0f0ff';
+        btn.onmouseout = () => btn.style.backgroundColor = '#f9f9f9';
 
-        // 點選立即套用優惠並關閉彈窗
         btn.onclick = () => {
             let idx = posCart.findIndex(x => x.name === item.name);
             if (idx === -1) addPOSItem(item);
@@ -686,17 +719,16 @@ function openPromoModal(item) {
             if (p.type) posCart[idx].discount = { type: p.type };
             else posCart[idx].discount = { rate: p.rate, type: '折扣' };
 
-            closeModal();       // 關閉彈窗
-            renderCart();       // 更新購物車
+            closeModal();  // 點擊立即關閉
+            renderCart();  // 更新購物車
         };
 
         promoDiv.appendChild(btn);
     });
 
-    // 顯示彈窗標題
-    document.getElementById("modalProductName").innerText = item.name;
-    document.getElementById("editModal").style.display = 'flex';
-    document.getElementById("editModal").classList.add("promoMode");
+    promoContent.appendChild(promoDiv);
+    editModal.innerHTML = '';
+    editModal.appendChild(promoContent);
 }
 
 
