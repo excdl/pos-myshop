@@ -647,44 +647,16 @@ function openEditModal(index, field) {
 }
 
 function openPromoModal(item) {
-    modalType = 'promo'; 
+    modalType = 'promo';
     editIndex = null;
 
-    // 隱藏數字鍵盤
+    // 顯示 promo、隱藏 numpad
+    document.getElementById("promoButtons").style.display = 'grid';
     document.getElementById("numpad").style.display = 'none';
 
     const promoDiv = document.getElementById("promoButtons");
-    promoDiv.style.display = 'grid';
-    promoDiv.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))'; // 自動換行
-    promoDiv.style.gap = '10px'; // 按鈕間距
-    promoDiv.style.padding = '15px';
-    promoDiv.innerHTML = '';
+    promoDiv.innerHTML = ""; 
 
-    // 設置彈窗樣式
-    const editModal = document.getElementById("editModal");
-    editModal.style.display = 'flex';
-    editModal.style.justifyContent = 'center';
-    editModal.style.alignItems = 'center';
-    editModal.style.backgroundColor = 'rgba(0,0,0,0.5)'; // 半透明背景
-    editModal.style.padding = '20px';
-
-    const promoContent = document.createElement('div');
-    promoContent.style.backgroundColor = '#fff';
-    promoContent.style.borderRadius = '10px';
-    promoContent.style.padding = '20px';
-    promoContent.style.maxWidth = '400px';
-    promoContent.style.width = '90%';
-    promoContent.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-    promoContent.id = 'promoContent';
-
-    // 商品名稱標題
-    const title = document.createElement('h3');
-    title.innerText = item.name;
-    title.style.textAlign = 'center';
-    title.style.marginBottom = '15px';
-    promoContent.appendChild(title);
-
-    // 優惠方案按鈕
     const promoList = [
         { name: '95折', rate: 0.95 },
         { name: '9折', rate: 0.9 },
@@ -699,36 +671,30 @@ function openPromoModal(item) {
     ];
 
     promoList.forEach(p => {
-        const btn = document.createElement('button');
+        const btn = document.createElement("button");
+        btn.className = "promoBtn";
         btn.innerText = p.name;
-        btn.style.padding = '10px 5px';
-        btn.style.fontSize = '16px';
-        btn.style.cursor = 'pointer';
-        btn.style.borderRadius = '5px';
-        btn.style.border = '1px solid #ccc';
-        btn.style.backgroundColor = '#f9f9f9';
-        btn.style.transition = '0.2s';
-        btn.onmouseover = () => btn.style.backgroundColor = '#e0f0ff';
-        btn.onmouseout = () => btn.style.backgroundColor = '#f9f9f9';
 
         btn.onclick = () => {
             let idx = posCart.findIndex(x => x.name === item.name);
             if (idx === -1) addPOSItem(item);
             idx = posCart.findIndex(x => x.name === item.name);
 
-            if (p.type) posCart[idx].discount = { type: p.type };
-            else posCart[idx].discount = { rate: p.rate, type: '折扣' };
+            if (p.type)
+                posCart[idx].discount = { type: p.type };
+            else
+                posCart[idx].discount = { rate: p.rate, type: '折扣' };
 
-            closeModal();  // 點擊立即關閉
-            renderCart();  // 更新購物車
+            closeModal();
+            renderCart();
         };
 
         promoDiv.appendChild(btn);
     });
 
-    promoContent.appendChild(promoDiv);
-    editModal.innerHTML = '';
-    editModal.appendChild(promoContent);
+    document.getElementById("modalProductName").innerText = item.name;
+
+    document.getElementById("editModal").style.display = 'flex';
 }
 
 
