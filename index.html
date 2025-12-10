@@ -647,56 +647,33 @@ function openEditModal(index, field) {
 }
 
 function openPromoModal(item) {
-    modalType = 'promo';
-    editIndex = null;
-
-    // 顯示 promo、隱藏 numpad
-    document.getElementById("promoButtons").style.display = 'grid';
+    modalType = 'promo'; editIndex = null;
     document.getElementById("numpad").style.display = 'none';
-
     const promoDiv = document.getElementById("promoButtons");
-    promoDiv.innerHTML = ""; 
-
+    promoDiv.style.display = 'grid';
+    promoDiv.innerHTML = '';
     const promoList = [
-        { name: '95折', rate: 0.95 },
-        { name: '9折', rate: 0.9 },
-        { name: '85折', rate: 0.85 },
-        { name: '8折', rate: 0.8 },
-        { name: '7折', rate: 0.7 },
-        { name: '6折', rate: 0.6 },
-        { name: '買一送一', type: '買一送一' },
-        { name: '買二送一', type: '買二送一' },
-        { name: '第二件減10', type: '第二件減10' },
-        { name: '第二件6折', type: '第二件6折' }
+        { name: '95折', rate: 0.95 }, { name: '9折', rate: 0.9 }, { name: '85折', rate: 0.85 }, { name: '8折', rate: 0.8 },
+        { name: '7折', rate: 0.7 }, { name: '6折', rate: 0.6 }, { name: '買一送一', type: '買一送一' }, { name: '買二送一', type: '買二送一' },
+        { name: '第二件減10', type: '第二件減10' }, { name: '第二件6折', type: '第二件6折' }
     ];
-
     promoList.forEach(p => {
-        const btn = document.createElement("button");
-        btn.className = "promoBtn";
+        const btn = document.createElement('button');
         btn.innerText = p.name;
-
         btn.onclick = () => {
             let idx = posCart.findIndex(x => x.name === item.name);
             if (idx === -1) addPOSItem(item);
             idx = posCart.findIndex(x => x.name === item.name);
-
-            if (p.type)
-                posCart[idx].discount = { type: p.type };
-            else
-                posCart[idx].discount = { rate: p.rate, type: '折扣' };
-
-            closeModal();
-            renderCart();
+            if (p.type) posCart[idx].discount = { type: p.type };
+            else posCart[idx].discount = { rate: p.rate, type: '折扣' };
+            closeModal(); renderCart();
         };
-
         promoDiv.appendChild(btn);
     });
-
     document.getElementById("modalProductName").innerText = item.name;
-
     document.getElementById("editModal").style.display = 'flex';
+    document.getElementById("editModal").classList.add("promoMode");
 }
-
 
 function np(v) {
     let input = document.getElementById("modalInput");
@@ -975,3 +952,4 @@ document.getElementById("posCheckout").onclick = async function () {
 
 </body>
 </html>
+
