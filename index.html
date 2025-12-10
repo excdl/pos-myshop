@@ -504,11 +504,13 @@ document.addEventListener("DOMContentLoaded", initPOSButtons);
 
 
   // ===== 渲染購物車 =====
+// ===== 渲染購物車 =====
 function renderCart() {
-    const box = document.getElementById("posCart"); 
+    const box = document.getElementById("posCart");
     box.innerHTML = "";
-    let total = 0;
+    let totalBeforeTax = 0;
 
+    // 計算每一項小計
     posCart.forEach((item, i) => {
         let sub = item.quantity * item.price;
         if (item.discount) {
@@ -520,39 +522,59 @@ function renderCart() {
                 default: sub *= item.discount.rate || 1; break;
             }
         }
-        total += sub;
+        totalBeforeTax += sub;
+
         const row = document.createElement("div");
         row.className = "cartRow";
         row.innerHTML = `<span class="name" onclick="openPromoModal(posCart[${i}])">${item.name}</span>
             <span class="qty" onclick="openEditModal(${i},'quantity')">${item.quantity.toFixed(2)} ${item.unit}</span>
             <span class="price" onclick="openEditModal(${i},'price')">${item.price}</span>
-            <span class="subtotal">${sub.toFixed(0)}</span>
+            <span class="subtotal">${formatNumber(Math.round(sub))}</span>
             <span class="remove"><button onclick="removeItem(${i})">刪</button></span>`;
         box.appendChild(row);
     });
 
     // 計算稅額
-    let taxBase = total;  // 稅前金額
-    let tax = currentTax === "應稅" ? Math.round(taxBase * 0.05) : 0;  // 稅額
-    let afterTax = taxBase + tax;  // 稅後總額
+    let tax = currentTax === "應稅" ? Math.round(totalBeforeTax * 0.05) : 0;
+    let afterTax = totalBeforeTax + tax;
 
     // 折扣
     let discountValue = Number(document.getElementById("discount").value) || 0;
 
-    // 應收總額 = 稅後總額 - 折扣
+    // 應收總額
     let receivable = afterTax - discountValue;
 
-    // 更新畫面上的三個金額
-    document.getElementById("beforeTax").innerText = formatNumber(Math.round(taxBase));
+    // 更新畫面上的金額
+    document.getElementById("beforeTax").innerText = formatNumber(Math.round(totalBeforeTax));
     document.getElementById("taxAmount").innerText = formatNumber(Math.round(tax));
     document.getElementById("afterTax").innerText = formatNumber(Math.round(afterTax));
 
-    // 顯示應收總額（並更新隱藏欄位給付款 / 找零使用）
-    document.getElementById("posTotal").innerText = formatNumber(Math.round(receivable));
+    // 顯示應收總額並存原始數字給找零使用
+    const posTotalEl = document.getElementById("posTotal");
+    posTotalEl.dataset.value = receivable;
+    posTotalEl.innerText = formatNumber(Math.round(receivable));
 
     // 更新找零
     updateChange();
 }
+
+// ===== 計算找零 =====
+function updateChange() {
+    const cash = Number(document.getElementById("cashInput").value) || 0;
+    const total = Number(document.getElementById("posTotal").dataset.value) || 0;
+    const change = cash - total;
+    document.getElementById("changeOut").textContent = formatNumber(Math.max(change, 0));
+}
+
+// ===== 千分位格式化 =====
+function formatNumber(num) {
+    return num.toLocaleString("zh-TW");
+}
+
+// ===== 監聽折扣與現金輸入變動，立即更新找零 =====
+document.getElementById("discount").addEventListener("input", renderCart);
+document.getElementById("cashInput").addEventListener("input", updateChange);
+
 
 async function updateTodaySales() {
   const now = new Date();
@@ -726,11 +748,6 @@ window.addEventListener("DOMContentLoaded", () => {
     setTax("免稅");
 });
 
-function updateChange() {
-    let cash = Number(document.getElementById("cashInput").value) || 0;
-    let total = Number(document.getElementById("posTotal").innerText) || 0;
-    document.getElementById("changeOut").innerText = Math.max(0, cash - total).toFixed(0);
-}
 
 function formatDiscountRate(rate) {
     let d = rate * 100;          // 0.9 → 90
