@@ -647,29 +647,53 @@ function openEditModal(index, field) {
 }
 
 function openPromoModal(item) {
-    modalType = 'promo'; editIndex = null;
+    modalType = 'promo';
+    editIndex = null;
+
+    // 隱藏數字鍵盤
     document.getElementById("numpad").style.display = 'none';
+
+    // 顯示優惠方案按鈕容器
     const promoDiv = document.getElementById("promoButtons");
     promoDiv.style.display = 'grid';
-    promoDiv.innerHTML = '';
+    promoDiv.innerHTML = ''; // 清空舊按鈕
+
+    // 定義優惠方案
     const promoList = [
-        { name: '95折', rate: 0.95 }, { name: '9折', rate: 0.9 }, { name: '85折', rate: 0.85 }, { name: '8折', rate: 0.8 },
-        { name: '7折', rate: 0.7 }, { name: '6折', rate: 0.6 }, { name: '買一送一', type: '買一送一' }, { name: '買二送一', type: '買二送一' },
-        { name: '第二件減10', type: '第二件減10' }, { name: '第二件6折', type: '第二件6折' }
+        { name: '95折', rate: 0.95 }, 
+        { name: '9折', rate: 0.9 }, 
+        { name: '85折', rate: 0.85 }, 
+        { name: '8折', rate: 0.8 },
+        { name: '7折', rate: 0.7 }, 
+        { name: '6折', rate: 0.6 }, 
+        { name: '買一送一', type: '買一送一' }, 
+        { name: '買二送一', type: '買二送一' },
+        { name: '第二件減10', type: '第二件減10' }, 
+        { name: '第二件6折', type: '第二件6折' }
     ];
+
+    // 生成優惠方案按鈕
     promoList.forEach(p => {
         const btn = document.createElement('button');
         btn.innerText = p.name;
+
+        // 點選立即套用優惠並關閉彈窗
         btn.onclick = () => {
             let idx = posCart.findIndex(x => x.name === item.name);
             if (idx === -1) addPOSItem(item);
             idx = posCart.findIndex(x => x.name === item.name);
+
             if (p.type) posCart[idx].discount = { type: p.type };
             else posCart[idx].discount = { rate: p.rate, type: '折扣' };
-            closeModal(); renderCart();
+
+            closeModal();       // 關閉彈窗
+            renderCart();       // 更新購物車
         };
+
         promoDiv.appendChild(btn);
     });
+
+    // 顯示彈窗標題
     document.getElementById("modalProductName").innerText = item.name;
     document.getElementById("editModal").style.display = 'flex';
     document.getElementById("editModal").classList.add("promoMode");
