@@ -72,6 +72,47 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 #printArea table{width:100%;border-collapse:collapse;}
 #printArea td{text-align:left;}
 #printArea td.right{text-align:right;}
+#taxSummary {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 5px solid #f1c40f;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 0.9em;
+}
+
+#taxSummary .taxRow {
+    display: flex;
+    justify-content: space-between;
+    margin: 3px 0;
+    color: #2c3e50;
+}
+
+#taxSummary .total {
+    font-weight: bold;
+    font-size: 1.05em;
+    color: #c0392b;
+}
+#todaySalesDisplay {
+    margin-top: 10px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: #ecf0f1;
+    border-left: 6px solid #2980b9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    font-size: 14px;
+    line-height: 1.6em;
+    color: #2c3e50;
+    white-space: pre-line;
+}
+
+#todaySalesDisplay b {
+    font-size: 15px;
+    color: #2980b9;
+}
+
 </style>
 </head>
 <body>
@@ -107,10 +148,25 @@ button{cursor:pointer;outline:none;transition:0.2s;}
       <input type="text" id="discount" placeholder="折扣金額" readonly>
     </div>
     <div id="taxContainer">
-      <button id="taxIncluded" class="active" onclick="setTax('應稅')">應稅</button>
-      <button id="taxExempt" onclick="setTax('免稅')">免稅</button>
-      <button id="taxAmountBtn" disabled>應稅金額: <span id="taxAmount">0</span></button>
-    </div>
+  <button id="taxIncluded" class="active" onclick="setTax('應稅')">應稅</button>
+  <button id="taxExempt" onclick="setTax('免稅')">免稅</button>
+</div>
+
+<div id="taxSummary">
+  <div class="taxRow">
+    <span>稅前金額：</span>
+    <span id="beforeTax">0</span> 元
+  </div>
+  <div class="taxRow">
+    <span>稅額：</span>
+    <span id="taxAmount">0</span> 元
+  </div>
+  <div class="taxRow total">
+    <span>稅後總額：</span>
+    <span id="afterTax">0</span> 元
+  </div>
+</div>
+
     <p>總額：<span id="posTotal">0</span> 元</p>
     <select id="posPayment">
       <option value="現金" selected>現金</option>
@@ -360,10 +416,18 @@ function renderCart() {
         box.appendChild(row);
     });
     let discountValue = Number(document.getElementById("discount").value) || 0;
-    let taxBase = total - discountValue;
-    let tax = currentTax === "應稅" ? taxBase * 0.05 : 0;
-    document.getElementById("taxAmount").innerText = tax.toFixed(0);
-    document.getElementById("posTotal").innerText = (taxBase + tax).toFixed(0);
+    let taxBase = total - discountValue;                    // 稅前金額
+let tax = currentTax === "應稅" ? Math.round(taxBase * 0.05) : 0;  // 稅額
+let finalAmount = taxBase + tax;                        // 稅後總額
+
+// 更新三列表
+document.getElementById("beforeTax").innerText = taxBase.toFixed(0);
+document.getElementById("taxAmount").innerText = tax.toFixed(0);
+document.getElementById("afterTax").innerText = finalAmount.toFixed(0);
+
+// 仍更新總額（給付款 / 現金找零用）
+document.getElementById("posTotal").innerText = finalAmount.toFixed(0);
+
     updateChange();
 }
 
@@ -378,12 +442,14 @@ async function updateTodaySales() {
     const data = await res.json();
 
     if(data.status === "success") {
-      document.getElementById("todaySalesDisplay").innerText =
-        `今日營業額：
+    document.getElementById("todaySalesDisplay").innerHTML =
+    `<b>今日營業概況</b>
+—————————————
 總額：${data.total.toFixed(0)} 元
 現金：${data.cash.toFixed(0)} 元
 信用卡：${data.credit.toFixed(0)} 元
 Line Pay：${data.linePay.toFixed(0)} 元`;
+
     } else {
       console.error("取得今日營業額失敗：", data.message);
     }
@@ -631,7 +697,7 @@ function calcDiscountedSubtotal(item) {
         body: JSON.stringify(payload)
     });
 }
-// ===== 結帳：先入帳 → 再嘗試列印 =====
+// ===== 結帳流程：先結帳 → 再列印 =====
 document.getElementById("posCheckout").onclick = async function () {
 
     if (posCart.length === 0) {
@@ -639,11 +705,11 @@ document.getElementById("posCheckout").onclick = async function () {
         return;
     }
 
-    // Step 1：結帳寫入試算表（永遠優先、一定執行）
+    // STEP 1：先結帳（寫入 Google Sheet）
     await sendCheckoutToSheet();
-    updateTodaySales();   
+    updateTodaySales();
 
-    // Step 2：格式化小票內容
+    // STEP 2：準備收據格式內容
     function getMaxLength() {
         let maxNameLen = 0, maxQtyLen = 0, maxPriceLen = 0, maxSubtotalLen = 0;
         posCart.forEach(item => {
@@ -651,62 +717,54 @@ document.getElementById("posCheckout").onclick = async function () {
             maxQtyLen = Math.max(maxQtyLen, item.quantity.toFixed(2).length);
             maxPriceLen = Math.max(maxPriceLen, item.price.toFixed(0).length);
 
-            let sub = item.quantity * item.price;
-            if (item.discount) {
-                switch (item.discount.type) {
-                    case "第二件減10": sub -= Math.floor(item.quantity / 2) * 10; break;
-                    case "買二送一": sub -= Math.floor(item.quantity / 3) * item.price; break;
-                    case "買一送一": sub -= Math.floor(item.quantity / 2) * item.price; break;
-                    case "第二件6折": sub -= Math.floor(item.quantity / 2) * item.price * 0.4; break;
-                    default: sub *= item.discount.rate || 1; break;
-                }
-            }
+            let sub = calcDiscountedSubtotal(item);
             maxSubtotalLen = Math.max(maxSubtotalLen, sub.toFixed(0).length);
         });
         return { maxNameLen, maxQtyLen, maxPriceLen, maxSubtotalLen };
     }
 
-    function padLeft(str, len) { str = str.toString(); return ' '.repeat(Math.max(0, len - str.length)) + str; }
-    function padRight(str, len) { str = str.toString(); return str + ' '.repeat(Math.max(0, len - str.length)); }
+    function padLeft(str, len) { str = String(str); return ' '.repeat(len - str.length) + str; }
+    function padRight(str, len) { str = String(str); return str + ' '.repeat(len - str.length); }
 
     function formatProductLine(item, maxNameLen, maxQtyLen, maxPriceLen, maxSubtotalLen) {
-        let sub = item.quantity * item.price;
-        let discountText = "";
-        if (item.discount) {
-            switch (item.discount.type) {
-                case "第二件減10": sub -= Math.floor(item.quantity / 2) * 10; discountText = "第二件減10"; break;
-                case "買二送一": sub -= Math.floor(item.quantity / 3) * item.price; discountText = "買二送一"; break;
-                case "買一送一": sub -= Math.floor(item.quantity / 2) * item.price; discountText = "買一送一"; break;
-                case "第二件6折": sub -= Math.floor(item.quantity / 2) * item.price * 0.4; discountText = "第二件6折"; break;
-                default: sub *= item.discount.rate || 1; discountText = formatDiscountRate(item.discount.rate); break;
-            }
-        }
+        let sub = calcDiscountedSubtotal(item);
+        let discountText = item.discount
+            ? (item.discount.type === "折扣"
+                ? formatDiscountRate(item.discount.rate)
+                : item.discount.type)
+            : "";
+
         let lines = [];
-        let name = item.name;
-        const chunk = 12;
-        for (let i = 0; i < name.length; i += chunk) {
-            const part = name.slice(i, i + chunk);
+        const chunk = 12; // 每行最多 12 個中文字
+
+        for (let i = 0; i < item.name.length; i += chunk) {
+            const part = item.name.slice(i, i + chunk);
+
             if (i === 0) {
-                lines.push(padRight(part, maxNameLen) + " " +
+                lines.push(
+                    padRight(part, maxNameLen) + " " +
                     padLeft(item.quantity.toFixed(2), maxQtyLen) + " " +
-                    padLeft(item.price.toFixed(0), maxPriceLen) + " " +
-                    padLeft(sub.toFixed(0), maxSubtotalLen)
+                    padLeft(item.price, maxPriceLen) + " " +
+                    padLeft(sub, maxSubtotalLen)
                 );
             } else {
-                lines.push(padRight(part, maxNameLen + maxQtyLen + maxPriceLen + maxSubtotalLen + 3));
+                lines.push("  " + part);
             }
         }
+
         if (discountText) lines.push("  優惠: " + discountText);
         return lines.join("\n");
     }
 
     function formatReceipt() {
         const { maxNameLen, maxQtyLen, maxPriceLen, maxSubtotalLen } = getMaxLength();
+
         let content = "===== 生鮮 POS 小票 =====\n";
+
         content += padRight("商品", maxNameLen) + " " +
-            padRight("數量", maxQtyLen) + " " +
-            padRight("單價", maxPriceLen) + " " +
-            padRight("小計", maxSubtotalLen) + "\n";
+                   padRight("數量", maxQtyLen) + " " +
+                   padRight("單價", maxPriceLen) + " " +
+                   padRight("小計", maxSubtotalLen) + "\n";
         content += "-".repeat(maxNameLen + maxQtyLen + maxPriceLen + maxSubtotalLen + 3) + "\n";
 
         posCart.forEach(item => {
@@ -715,36 +773,37 @@ document.getElementById("posCheckout").onclick = async function () {
 
         content += "-".repeat(maxNameLen + maxQtyLen + maxPriceLen + maxSubtotalLen + 3) + "\n";
 
-        content += padRight("折扣總額:", maxNameLen + maxQtyLen) + padLeft(document.getElementById("discount").value || 0, maxPriceLen + maxSubtotalLen + 1) + " 元\n";
-        content += padRight("稅金:", maxNameLen + maxQtyLen) +padLeft(document.getElementById("taxAmount").innerText, maxPriceLen + maxSubtotalLen + 1) + " 元\n";
-        content += padRight("總額:", maxNameLen + maxQtyLen) + padLeft(document.getElementById("posTotal").innerText, maxPriceLen + maxSubtotalLen + 1) + " 元\n";
-        content += padRight("付款方式:", maxNameLen + maxQtyLen) + document.getElementById("posPayment").value + "\n";
+        content += "折扣總額: " + document.getElementById("discount").value + " 元\n";
+        content += "稅金: " + document.getElementById("taxAmount").innerText + " 元\n";
+        content += "總額: " + document.getElementById("posTotal").innerText + " 元\n";
+        content += "付款方式: " + document.getElementById("posPayment").value + "\n";
 
         if (document.getElementById("posPayment").value === "現金") {
-            let cash = Number(document.getElementById("cashInput").value);
-            let change = document.getElementById("changeOut").innerText;
-            content += padRight("現金收入:", maxNameLen + maxQtyLen) + padLeft(cash.toFixed(0), maxPriceLen + maxSubtotalLen + 1) + " 元\n";
-            content += padRight("找零:", maxNameLen + maxQtyLen) + padLeft(change, maxPriceLen + maxSubtotalLen + 1) + " 元\n";
+            content += "現金收入: " + document.getElementById("cashInput").value + " 元\n";
+            content += "找零: " + document.getElementById("changeOut").innerText + " 元\n";
         }
 
         content += "===== 感謝光臨 =====\n";
         return content;
     }
 
-    // Step 3：列印
+    // STEP 3：列印
     const receiptContent = formatReceipt();
     const printWindow = window.open('', '', 'width=300,height=600');
-    printWindow.document.write('<pre style="font-family:monospace;font-size:12px;line-height:1.2;">' + receiptContent + '</pre>');
+    printWindow.document.write(
+        `<pre style="font-family:monospace;font-size:12px;line-height:1.2;">${receiptContent}</pre>`
+    );
     printWindow.document.write('<script>window.onload=function(){window.print();};<\/script>');
     printWindow.document.close();
 
-    // Step 4：清空購物車
+    // STEP 4：清空購物車
     posCart = [];
     document.getElementById("discount").value = "0";
     document.getElementById("cashInput").value = "";
     document.getElementById("changeOut").textContent = "0";
     renderCart();
 };
+
 </script>
 
 </body>
