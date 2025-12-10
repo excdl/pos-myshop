@@ -133,26 +133,29 @@ button{cursor:pointer;outline:none;transition:0.2s;}
     color: #2980b9;
 }
 #paymentButtons {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 #paymentButtons .payBtn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  background: #bdc3c7;
-  color: #2c3e50;
-  cursor: pointer;
-  font-size: 1em;
+    height: 42px; /* 原 60px × 0.7 = 42px */
+    border-radius: 8px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    flex: 1;            /* 平分寬度 */
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: 0.2s;
+}
+
+#paymentButtons .payBtn:hover {
+    background-color: #0056b3;
 }
 
 #paymentButtons .payBtn.active {
-  background: #27ae60;
-  color: white;
-  font-weight: bold;
+    background-color: #28a745;
 }
 
 </style>
