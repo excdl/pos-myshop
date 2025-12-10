@@ -74,26 +74,46 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 #printArea td.right{text-align:right;}
 #taxSummary {
     margin-top: 8px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     background: #f9f9f9;
     border-radius: 8px;
     border-left: 5px solid #f1c40f;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    font-size: 0.9em;
+    font-size: 0.95em;
 }
 
+/* 每列排版 */
 #taxSummary .taxRow {
     display: flex;
     justify-content: space-between;
-    margin: 3px 0;
+    align-items: center;
+    margin: 6px 0;
+    white-space: nowrap;
+}
+
+/* 左邊標籤固定寬度，整體更整齊 */
+#taxSummary .label {
+    width: 90px; /* ★ 左欄固定寬度，避免晃動 */
     color: #2c3e50;
 }
 
-#taxSummary .total {
-    font-weight: bold;
+/* 右邊金額使用等寬字型，永遠靠右對齊 */
+#taxSummary .value {
+    min-width: 110px; /* ★ 右側數字固定寬度 */
+    text-align: right;
+    font-family: 'Courier New', monospace; /* ★ 等寬字體 */
     font-size: 1.05em;
-    color: #c0392b;
+    font-weight: 600;
+    color: #2c3e50;
 }
+
+/* 稅後總額突出顯示 */
+#taxSummary .total .value {
+    color: #c0392b;
+    font-weight: bold;
+    font-size: 1.15em;
+}
+
 #todaySalesDisplay {
     margin-top: 10px;
     padding: 12px 15px;
@@ -154,18 +174,19 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 
 <div id="taxSummary">
   <div class="taxRow">
-    <span>稅前金額：</span>
-    <span id="beforeTax">0</span> 元
+    <span class="label">稅前金額：</span>
+    <span class="value"><span id="beforeTax">0</span> 元</span>
   </div>
   <div class="taxRow">
-    <span>稅額：</span>
-    <span id="taxAmount">0</span> 元
+    <span class="label">稅額：</span>
+    <span class="value"><span id="taxAmount">0</span> 元</span>
   </div>
   <div class="taxRow total">
-    <span>稅後總額：</span>
-    <span id="afterTax">0</span> 元
+    <span class="label">稅後總額：</span>
+    <span class="value"><span id="afterTax">0</span> 元</span>
   </div>
 </div>
+
 
     <p>總額：<span id="posTotal">0</span> 元</p>
     <select id="posPayment">
@@ -266,7 +287,11 @@ async function login() {
       // 更新並每秒刷新登入時間
       updateLoginTime();
       setInterval(updateLoginTime, 1000);
-
+      
+      // 千分位格式化
+      function formatNumber(num) {
+      return Number(num).toLocaleString('zh-TW');
+      }
       
       // 取得商品資料
       fetchProducts();
@@ -421,9 +446,9 @@ let tax = currentTax === "應稅" ? Math.round(taxBase * 0.05) : 0;  // 稅額
 let finalAmount = taxBase + tax;                        // 稅後總額
 
 // 更新三列表
-document.getElementById("beforeTax").innerText = taxBase.toFixed(0);
-document.getElementById("taxAmount").innerText = tax.toFixed(0);
-document.getElementById("afterTax").innerText = finalAmount.toFixed(0);
+document.getElementById("beforeTax").innerText = formatNumber(taxBase.toFixed(0));
+document.getElementById("taxAmount").innerText = formatNumber(tax.toFixed(0));
+document.getElementById("afterTax").innerText = formatNumber(finalAmount.toFixed(0));
 
 // 仍更新總額（給付款 / 現金找零用）
 document.getElementById("posTotal").innerText = finalAmount.toFixed(0);
