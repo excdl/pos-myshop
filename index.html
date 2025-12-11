@@ -363,6 +363,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
   background: #43a047;
 }
 .closeModal {
+  display: none; /* 預設隱藏 */
   position: absolute;
   top: 10px;
   right: 10px;
@@ -382,6 +383,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
   background: #999;
   color: white;
 }
+
 
 
 </style>
@@ -474,8 +476,8 @@ button{cursor:pointer;outline:none;transition:0.2s;}
   <!-- 編輯 Modal -->
 <div id="editModal">
   <div class="modalContent">
-    <!-- 新增右上角圓形 X -->
-    <span class="closeModal" onclick="closeModal()">×</span>
+    <!-- 右上角 X，預設隱藏 -->
+    <span id="promoCloseBtn" class="closeModal" onclick="closeModal()">×</span>
 
     <h4 id="modalProductName">輸入</h4>
     <input id="modalInput" readonly>
@@ -495,7 +497,6 @@ button{cursor:pointer;outline:none;transition:0.2s;}
     </div>
   </div>
 </div>
-
 
 <!-- ======= POS 大鍵盤（折扣 / 收現金 專用） ======= -->
 <div id="posKeypadModal">
@@ -929,7 +930,7 @@ document.getElementById("cashInput").onclick = () => {
   openPOSKeypad("cash", document.getElementById("cashInput").value);
 };
 
-// ====== 打開編輯 Modal ====== 
+// ====== 打開編輯 Modal ======
 function openEditModal(index, field) {
     editIndex = index;
     editingField = field;
@@ -938,6 +939,13 @@ function openEditModal(index, field) {
     const modal = document.getElementById("editModal");
     const promoDiv = document.getElementById("promoButtons");
     const numpad = document.getElementById("numpad");
+    const modalActions = document.querySelector("#editModal .modalActions");
+    const modalInput = document.getElementById("modalInput");
+    const closeBtn = document.getElementById("promoCloseBtn");
+
+    // 隱藏右上 X
+    closeBtn.style.display = 'none';
+    promoDiv.style.display = 'none';
 
     // ===== 折扣 & 現金 → 大鍵盤 =====
     if (field === 'discount' || field === 'cash') {
@@ -954,11 +962,12 @@ function openEditModal(index, field) {
     }
 
     // ===== 其他 → 小鍵盤 =====
-    promoDiv.style.display = 'none';
     numpad.style.display = 'grid';
+    modalInput.style.display = 'block';
+    modalActions.style.display = 'flex';
 
     let value = posCart[index] && posCart[index][field] ? posCart[index][field] : '';
-    document.getElementById("modalInput").value = value;
+    modalInput.value = value;
     document.getElementById("modalProductName").innerText = "輸入";
 
     modal.style.display = "flex";
@@ -973,14 +982,18 @@ function openPromoModal(item) {
     const promoDiv = document.getElementById("promoButtons");
     const numpad = document.getElementById("numpad");
     const modalActions = document.querySelector("#editModal .modalActions");
+    const modalInput = document.getElementById("modalInput");
+    const closeBtn = document.getElementById("promoCloseBtn");
 
-    // 隱藏小鍵盤，顯示優惠方案
+    // 顯示優惠方案彈窗特定元素
     numpad.style.display = 'none';
+    modalInput.style.display = 'none';
     promoDiv.style.display = 'grid';
     promoDiv.innerHTML = '';
 
-    // 隱藏取消 & 確定按鈕
+    // 只針對優惠方案：隱藏按鈕，顯示右上 X
     modalActions.style.display = 'none';
+    closeBtn.style.display = 'block';
 
     const promoList = [
         { name: '95折', rate: 0.95 }, { name: '9折', rate: 0.9 }, { name: '85折', rate: 0.85 }, { name: '8折', rate: 0.8 },
@@ -1009,48 +1022,23 @@ function openPromoModal(item) {
     modal.style.display = 'flex';
 }
 
-
-// ====== 小鍵盤輸入 ======
-function np(v) {
-    let input = document.getElementById("modalInput");
-    input.value += v;
-}
-
-// ====== 小鍵盤刪除 ======
-function backspace() {
-    let input = document.getElementById("modalInput");
-    input.value = input.value.slice(0, -1);
-}
-
-// ====== 小鍵盤確認 ======
-function confirmEdit() {
-    let val = document.getElementById("modalInput").value;
-
-    if (editIndex !== null && editingField === 'quantity' &&
-        posCart[editIndex].unit === '斤') {
-
-        const parts = val.split('.');
-        let j = Number(parts[0]) || 0;
-        let l = Number(parts[1]) || 0;
-        let q = Number(parts[2]) || 0;
-
-        // 斤、兩、錢換算成總斤
-        let totalQty = j + l / 16 + q / 160;
-        posCart[editIndex].quantity = totalQty;
-
-    } else {
-        let v = Number(val);
-        if (editIndex !== null) posCart[editIndex][editingField] = v;
-    }
-
-    closeModal();
-    renderCart();
-}
-
-// ====== 關閉 Modal ======
+// ====== 關閉 modal ======
 function closeModal() {
-    document.getElementById("editModal").style.display = 'none';
-    document.getElementById("posKeypadModal").style.display = 'none';
+    const modal = document.getElementById("editModal");
+    const modalActions = document.querySelector("#editModal .modalActions");
+    const modalInput = document.getElementById("modalInput");
+    const numpad = document.getElementById("numpad");
+    const closeBtn = document.getElementById("promoCloseBtn");
+    const promoDiv = document.getElementById("promoButtons");
+
+    modal.style.display = 'none';
+
+    // 恢復共用 modal 預設狀態
+    modalActions.style.display = 'flex';
+    modalInput.style.display = 'block';
+    numpad.style.display = 'grid';
+    closeBtn.style.display = 'none';
+    promoDiv.style.display = 'none';
 }
 
 // ====== POS 大鍵盤輸入 ======
@@ -1079,6 +1067,7 @@ function kpConfirm() {
     closeModal();
     renderCart();
 }
+
   
 function setTax(t) {
     currentTax = t;
