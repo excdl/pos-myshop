@@ -476,7 +476,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
   <!-- 編輯 Modal -->
 <div id="editModal">
   <div class="modalContent">
-    <!-- 右上角 X，預設隱藏 -->
+    <!-- 右上角 X -->
     <span id="promoCloseBtn" class="closeModal" onclick="closeModal()">×</span>
 
     <h4 id="modalProductName">輸入</h4>
@@ -497,6 +497,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
     </div>
   </div>
 </div>
+
 
 <!-- ======= POS 大鍵盤（折扣 / 收現金 專用） ======= -->
 <div id="posKeypadModal">
@@ -931,6 +932,7 @@ document.getElementById("cashInput").onclick = () => {
 };
 
 // ====== 打開編輯 Modal ======
+// ====== 打開編輯 Modal ======
 function openEditModal(index, field) {
     editIndex = index;
     editingField = field;
@@ -943,7 +945,7 @@ function openEditModal(index, field) {
     const modalInput = document.getElementById("modalInput");
     const closeBtn = document.getElementById("promoCloseBtn");
 
-    // 隱藏右上 X
+    // 隱藏優惠方案特定元素
     closeBtn.style.display = 'none';
     promoDiv.style.display = 'none';
 
@@ -985,13 +987,13 @@ function openPromoModal(item) {
     const modalInput = document.getElementById("modalInput");
     const closeBtn = document.getElementById("promoCloseBtn");
 
-    // 顯示優惠方案彈窗特定元素
+    // 顯示優惠方案彈窗
     numpad.style.display = 'none';
     modalInput.style.display = 'none';
     promoDiv.style.display = 'grid';
     promoDiv.innerHTML = '';
 
-    // 只針對優惠方案：隱藏按鈕，顯示右上 X
+    // 隱藏原本按鈕，顯示右上 X
     modalActions.style.display = 'none';
     closeBtn.style.display = 'block';
 
@@ -1037,8 +1039,8 @@ function closeModal() {
     modalActions.style.display = 'flex';
     modalInput.style.display = 'block';
     numpad.style.display = 'grid';
-    closeBtn.style.display = 'none';
     promoDiv.style.display = 'none';
+    closeBtn.style.display = 'none';
 }
 
 // ====== POS 大鍵盤輸入 ======
