@@ -163,62 +163,67 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 #logoutBtn.active {
     background-color: #ccc;  /* 運作中提示色，可自行調整 */
 }
-/* 整個 numpad 是 3x4 格 */
-#numpad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 10px;
+/* ======= 新的折扣/現金鍵盤 ======= */
+#posKeypadModal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
 }
 
-/* 快速金額按鈕 */
-#promoButtons {
+.keypadBox {
+  background: #fff;
+  padding: 20px;
+  width: 380px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+#posKeypadInput {
+  width: 100%;
+  font-size: 32px;
+  padding: 12px;
+  margin-bottom: 15px;
+  text-align: right;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
+.posKeypadGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-top: 15px;
 }
 
-/* POS 大按鈕風格 */
-#numpad button,
-#promoButtons button {
-  padding: 18px 0;
-  font-size: 20px;
-  font-weight: bold;
+.posKeypadGrid button {
+  height: 60px;
+  font-size: 22px;
   border: none;
-  border-radius: 12px;
-  background: #f1f1f1;
-  box-shadow: 0 4px 0 #c9c9c9;
-  cursor: pointer;
-  transition: all 0.08s ease-in-out;
+  border-radius: 8px;
+  background: #eee;
 }
 
-/* 按下效果 */
-#numpad button:active,
-#promoButtons button:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 #b0b0b0;
+.posKeypadGrid button.big {
+  background: #c8ebff;
+  font-size: 20px;
 }
 
-/* 特殊按鍵顏色（← backspace） */
-#numpad button:last-child {
-  background: #ff6666;
+.posKeypadGrid button.confirm {
+  background: #4caf50;
   color: white;
-  box-shadow: 0 4px 0 #cc5252;
-}
-
-#numpad button:last-child:active {
-  box-shadow: 0 1px 0 #993d3d;
-}
-
-/* 適合 touch UI，避免選中文字 */
-button {
-  user-select: none;
+  font-size: 22px;
 }
 
 
 </style>
 </head>
+
+  
 <body>
 
 <!-- 登入頁面 -->
@@ -307,34 +312,13 @@ button {
   <div class="modalContent">
     <h4 id="modalProductName">輸入</h4>
     <input id="modalInput" readonly>
-    
-    <!-- 數字鍵 -->
     <div id="numpad">
-      <button onclick="np('7')">7</button>
-      <button onclick="np('8')">8</button>
-      <button onclick="np('9')">9</button>
-      <button onclick="np('4')">4</button>
-      <button onclick="np('5')">5</button>
-      <button onclick="np('6')">6</button>
-      <button onclick="np('1')">1</button>
-      <button onclick="np('2')">2</button>
-      <button onclick="np('3')">3</button>
-      <button onclick="np('0')">0</button>
-      <button onclick="np('.')">.</button>
-      <button onclick="backspace()">←</button>
+      <button onclick="np('7')">7</button><button onclick="np('8')">8</button><button onclick="np('9')">9</button>
+      <button onclick="np('4')">4</button><button onclick="np('5')">5</button><button onclick="np('6')">6</button>
+      <button onclick="np('1')">1</button><button onclick="np('2')">2</button><button onclick="np('3')">3</button>
+      <button onclick="np('0')">0</button><button onclick="np('.')">.</button><button onclick="backspace()">←</button>
     </div>
-
-    <!-- 快速金額按鈕 -->
-    <div id="quickButtons">
-      <button onclick="np('1000')">1000</button>
-      <button onclick="np('500')">500</button>
-      <button onclick="np('100')">100</button>
-      <button onclick="np('00')">00</button>
-    </div>
-
-    <!-- 促銷按鈕 -->
     <div id="promoButtons"></div>
-
     <div class="modalActions">
       <button class="cancel" onclick="closeModal()">取消</button>
       <button class="confirm" onclick="confirmEdit()">確定</button>
@@ -342,12 +326,43 @@ button {
   </div>
 </div>
 
+<!-- ======= POS 大鍵盤（僅折扣 / 收現金使用） ======= -->
+<div id="posKeypadModal">
+  <div class="keypadBox">
 
+    <h3 id="posKeypadTitle">輸入</h3>
 
+    <input id="posKeypadInput" readonly>
+
+    <div class="posKeypadGrid">
+      <button class="big" onclick="kpInput('1000')">1000</button>
+      <button onclick="kpInput('7')">7</button>
+      <button onclick="kpInput('8')">8</button>
+      <button onclick="kpInput('9')">9</button>
+
+      <button class="big" onclick="kpInput('500')">500</button>
+      <button onclick="kpInput('4')">4</button>
+      <button onclick="kpInput('5')">5</button>
+      <button onclick="kpInput('6')">6</button>
+
+      <button class="big" onclick="kpInput('100')">100</button>
+      <button onclick="kpInput('1')">1</button>
+      <button onclick="kpInput('2')">2</button>
+      <button onclick="kpInput('3')">3</button>
+
+      <button class="confirm" onclick="kpConfirm()">確認</button>
+      <button onclick="kpInput('00')">00</button>
+      <button onclick="kpInput('0')">0</button>
+      <button onclick="kpBack()">←</button>
+    </div>
+
+  </div>
+</div>
+    
 <!-- 列印收據區 -->
 <div id="printArea"></div>
 
-
+</body>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbyKa23KavY-bH2LZA0jj6z3eJikzdqrhIoAvCjrjukRyeVHKapjmcESHvBcozkKtp8/exec";
@@ -732,8 +747,13 @@ updateTodaySales();
 function removeItem(i) { posCart.splice(i, 1); renderCart(); }
 
 // ===== 編輯數量/折扣/收現 =====
-document.getElementById("discount").onclick = () => openEditModal(null, 'discount');
-document.getElementById("cashInput").onclick = () => openEditModal(null, 'cash');
+document.getElementById("discount").onclick = () => {
+  openPOSKeypad("discount", document.getElementById("discount").value);
+};
+
+document.getElementById("cashInput").onclick = () => {
+  openPOSKeypad("cash", document.getElementById("cashInput").value);
+};
 
 function openEditModal(index, field) {
     editIndex = index; editingField = field; modalType = field;
@@ -1043,9 +1063,48 @@ document.getElementById("posCheckout").onclick = async function () {
     }
 };
 
+let kpTarget = null;
+
+function openPOSKeypad(type, value = "0") {
+  kpTarget = type;
+  document.getElementById("posKeypadTitle").innerText =
+    type === "discount" ? "折扣金額" : "收現金";
+
+  document.getElementById("posKeypadInput").value = value;
+  document.getElementById("posKeypadModal").style.display = "flex";
+}
+
+function kpInput(v) {
+  const input = document.getElementById("posKeypadInput");
+  if (input.value === "0") input.value = "";
+  input.value += v;
+}
+
+function kpBack() {
+  const input = document.getElementById("posKeypadInput");
+  input.value = input.value.slice(0, -1);
+  if (input.value === "" || input.value === "-") input.value = "0";
+}
+
+function kpConfirm() {
+  const v = document.getElementById("posKeypadInput").value;
+
+  if (kpTarget === "discount") {
+    document.getElementById("discount").value = v;
+    renderCart();
+  }
+
+  if (kpTarget === "cash") {
+    document.getElementById("cashInput").value = v;
+    updateChange();
+  }
+
+  document.getElementById("posKeypadModal").style.display = "none";
+}
 
 </script>
 
 </body>
 </html>
+
 
