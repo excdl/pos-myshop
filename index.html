@@ -2084,41 +2084,37 @@ function confirmEdit() {
     renderCart();
 }
 
-// ====== 關閉 modal（小鍵盤與大鍵盤都關） ======
+// ====== 關閉 modal（小鍵盤 / 優惠 / 大鍵盤） ======
 function closeModal() {
-
     // 小鍵盤 / 優惠方案
-    const modal = document.getElementById("editModal");
+    const editModal = document.getElementById("editModal");
     const modalActions = document.querySelector("#editModal .modalActions");
     const modalInput = document.getElementById("modalInput");
     const numpad = document.getElementById("numpad");
     const closeBtn = document.getElementById("promoCloseBtn");
     const promoDiv = document.getElementById("promoButtons");
 
-    // 大鍵盤
-    const posKeypad = document.getElementById("posKeypadModal");
-
-    // 關閉兩種 modal
-    modal.style.display = "none";
-    posKeypad.style.display = "none";   // ⭐ 新增：大鍵盤也收起來
-
-    // 重置小鍵盤 UI
-    modalActions.style.display = "flex";
-    modalInput.style.display = "block";
-    modalInput.readOnly = false;
-    numpad.style.display = "grid";
-    promoDiv.style.display = "none";
-    closeBtn.style.display = "none";
-}
-
-    // 恢復共用 modal 預設狀態
+    editModal.style.display = 'none';
     modalActions.style.display = 'flex';
     modalInput.style.display = 'block';
     modalInput.readOnly = false;
     numpad.style.display = 'grid';
     promoDiv.style.display = 'none';
     closeBtn.style.display = 'none';
+
+    // 大鍵盤
+    const posModal = document.getElementById("posKeypadModal");
+    if (posModal) {
+        posModal.style.display = 'none';
+        document.getElementById("posKeypadInput").value = ''; // 清空大鍵盤輸入
+    }
+
+    // 重置編輯狀態
+    editIndex = null;
+    editingField = null;
+    modalType = null;
 }
+
 
 // ====== POS 大鍵盤輸入 ======
 function kpInput(v) {
