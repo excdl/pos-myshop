@@ -163,12 +163,12 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 #logoutBtn.active {
     background-color: #ccc;  /* 運作中提示色，可自行調整 */
 }
-/* ======= 新的折扣/現金鍵盤 ======= */
+/* ======= 新的折扣/現金鍵盤：超商 POS 風格 ======= */
 #posKeypadModal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.4);
   display: none;
   justify-content: center;
   align-items: center;
@@ -176,22 +176,34 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 }
 
 .keypadBox {
-  background: #fff;
-  padding: 20px;
-  width: 380px;
-  border-radius: 12px;
+  background: #2b2b2b;
+  padding: 18px;
+  width: 340px;
+  border-radius: 14px;
   text-align: center;
-  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  box-shadow: 0 0 30px rgba(0,0,0,0.35);
 }
 
+#posKeypadTitle {
+  margin-bottom: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* 顯示金額框 */
 #posKeypadInput {
   width: 100%;
   font-size: 32px;
   padding: 12px;
   margin-bottom: 15px;
   text-align: right;
-  border: 2px solid #ccc;
+  border: none;
   border-radius: 8px;
+  box-sizing: border-box;
+  background: #111;
+  color: #0f0;      /* 綠字＝電子收銀機風格 */
+  letter-spacing: 2px;
 }
 
 .posKeypadGrid {
@@ -202,21 +214,29 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 
 .posKeypadGrid button {
   height: 60px;
-  font-size: 22px;
+  font-size: 20px;
   border: none;
   border-radius: 8px;
-  background: #eee;
+  background: #444;
+  color: #fff;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
+  transition: 0.1s;
+}
+
+.posKeypadGrid button:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 0 0 rgba(0,0,0,0.4);
 }
 
 .posKeypadGrid button.big {
-  background: #c8ebff;
-  font-size: 20px;
+  background: #0277bd;  /* 藍色金額鍵 */
+  font-weight: bold;
 }
 
 .posKeypadGrid button.confirm {
-  background: #4caf50;
-  color: white;
+  background: #43a047;  /* 綠色確認鍵 */
   font-size: 22px;
+  font-weight: bold;
 }
 
 
@@ -326,7 +346,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
   </div>
 </div>
 
-<!-- ======= POS 大鍵盤（僅折扣 / 收現金使用） ======= -->
+<!-- ======= POS 大鍵盤（折扣 / 收現金 專用） ======= -->
 <div id="posKeypadModal">
   <div class="keypadBox">
 
@@ -358,6 +378,7 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 
   </div>
 </div>
+
     
 <!-- 列印收據區 -->
 <div id="printArea"></div>
