@@ -903,6 +903,7 @@ document.getElementById("cashInput").onclick = () => {
 };
 
 // ====== 打開編輯 Modal ====== 
+// ====== 打開編輯 Modal ====== 
 function openEditModal(index, field) {
     editIndex = index;
     editingField = field;
@@ -921,19 +922,22 @@ function openEditModal(index, field) {
         return;
     }
 
-    // ===== 商品名稱 / 優惠方案 → 顯示按鈕 =====
-    if (field === 'name' || field === 'promo') {
-        document.getElementById("numpad").style.display = 'none';
-        const promoContainer = document.getElementById("promoButtons");
+    const promoContainer = document.getElementById("promoButtons");
+    const numpad = document.getElementById("numpad");
+
+    // ===== 商品名稱或有優惠方案列表時 =====
+    const item = posCart[index];
+    if (item && item.promoList && item.promoList.length > 0) {
+        // 顯示優惠方案按鈕
+        numpad.style.display = 'none';
         promoContainer.style.display = 'grid';
         promoContainer.innerHTML = ''; // 清空原本按鈕
 
-        const promos = ['買一送一', '折扣10%', '滿額折扣']; // 範例優惠
-        promos.forEach(p => {
+        item.promoList.forEach(p => {
             const btn = document.createElement('button');
             btn.textContent = p;
             btn.onclick = () => {
-                if (editIndex !== null) posCart[editIndex][editingField] = p;
+                if (editIndex !== null) item.promo = p;  // 儲存到 posCart[index].promo
                 closeModal();
                 renderCart();
             };
@@ -945,11 +949,11 @@ function openEditModal(index, field) {
         return;
     }
 
-    // ===== 其他 → 小鍵盤 =====
-    document.getElementById("promoButtons").style.display = 'none';
-    document.getElementById("numpad").style.display = 'grid';
+    // ===== 其他欄位 → 小鍵盤 =====
+    promoContainer.style.display = 'none';
+    numpad.style.display = 'grid';
 
-    let value = posCart[index] && posCart[index][field] ? posCart[index][field] : '';
+    let value = item && item[field] ? item[field] : '';
     document.getElementById("modalInput").value = value;
     document.getElementById("modalProductName").innerText = "輸入";
 
@@ -957,6 +961,7 @@ function openEditModal(index, field) {
 }
 
 
+ 
 // ====== 小鍵盤輸入 ======
 function np(v) {
     let input = document.getElementById("modalInput");
