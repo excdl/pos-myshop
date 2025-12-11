@@ -501,57 +501,38 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 
 <div id="todaySalesDisplay" style="margin-top:10px; white-space:pre-line;"></div>
 
-
-  
-<!-- 小鍵盤 / 優惠彈窗 -->
+<!-- ======== 小鍵盤 / 優惠方案共用 Modal ======== -->
 <div id="editModal">
   <div class="modalContent">
-
-    <h4 id="modalProductName">輸入</h4>
-
+    <span class="closeModal" id="editCloseBtn" onclick="closeModal()">×</span>
+    <h4 id="modalProductName" style="color:#fff;">輸入</h4>
     <input id="modalInput">
 
+    <!-- 小鍵盤 -->
     <div id="numpad">
-      <button onclick="np('7')">7</button>
-      <button onclick="np('8')">8</button>
-      <button onclick="np('9')">9</button>
-
-      <button onclick="np('4')">4</button>
-      <button onclick="np('5')">5</button>
-      <button onclick="np('6')">6</button>
-
-      <button onclick="np('1')">1</button>
-      <button onclick="np('2')">2</button>
-      <button onclick="np('3')">3</button>
-
-      <button onclick="np('0')">0</button>
-      <button onclick="np('.')">.</button>
-      <button onclick="backspace()">←</button>
+      <button onclick="np('7')">7</button><button onclick="np('8')">8</button><button onclick="np('9')">9</button>
+      <button onclick="np('4')">4</button><button onclick="np('5')">5</button><button onclick="np('6')">6</button>
+      <button onclick="np('1')">1</button><button onclick="np('2')">2</button><button onclick="np('3')">3</button>
+      <button onclick="np('0')">0</button><button onclick="np('.')">.</button><button onclick="backspace()">←</button>
     </div>
 
+    <!-- 優惠方案按鈕 -->
     <div id="promoButtons"></div>
 
+    <!-- 小鍵盤確認/取消按鈕 -->
     <div class="modalActions">
       <button class="cancel" onclick="closeModal()">取消</button>
       <button class="confirm" onclick="confirmEdit()">確定</button>
     </div>
-
-    <!-- 小鍵盤右上 X -->
-    <span class="closeModal" id="promoCloseBtn" onclick="closeModal()">×</span>
   </div>
 </div>
 
-<!-- 大鍵盤（收款 / 折扣用） -->
+<!-- ======= POS 大鍵盤（折扣 / 收現金 專用） ======= -->
 <div id="posKeypadModal">
   <div class="keypadBox">
-
-    <!-- ⭐ 大鍵盤右上角關閉鍵 -->
     <span class="closeModal" id="posCloseBtn" onclick="closeModal()">×</span>
-
     <h3 id="posKeypadTitle">輸入</h3>
-
     <input id="posKeypadInput" readonly>
-
     <div class="posKeypadGrid">
       <button class="big" onclick="kpInput('1000')">1000</button>
       <button onclick="kpInput('7')">7</button>
@@ -573,10 +554,8 @@ button{cursor:pointer;outline:none;transition:0.2s;}
       <button onclick="kpInput('0')">0</button>
       <button onclick="kpBack()">←</button>
     </div>
-
   </div>
 </div>
-
     
 <!-- 列印收據區 -->
 <div id="printArea"></div>
@@ -977,7 +956,7 @@ document.getElementById("cashInput").onclick = () => {
 };
 
 // ====== 打開編輯 Modal ======
-// ====== 打開編輯 Modal ======
+// ====== 開啟小鍵盤 / 大鍵盤 ======
 function openEditModal(index, field) {
     editIndex = index;
     editingField = field;
@@ -988,11 +967,10 @@ function openEditModal(index, field) {
     const numpad = document.getElementById("numpad");
     const modalActions = document.querySelector("#editModal .modalActions");
     const modalInput = document.getElementById("modalInput");
-    const closeBtn = document.getElementById("promoCloseBtn");
 
     // 隱藏優惠方案專用元素
     promoDiv.style.display = 'none';
-    closeBtn.style.display = 'none';
+    document.getElementById("editCloseBtn").style.display = 'none';
 
     if (field === 'discount' || field === 'cash') {
         // 大鍵盤模式
@@ -1005,15 +983,16 @@ function openEditModal(index, field) {
     // 小鍵盤模式
     numpad.style.display = 'grid';
     modalInput.style.display = 'block';
-    modalInput.readOnly = false; // ✅ 確保可輸入
+    modalInput.readOnly = false;
     modalActions.style.display = 'flex';
 
     modalInput.value = posCart[index] && posCart[index][field] ? posCart[index][field] : '';
     document.getElementById("modalProductName").innerText = "輸入";
+    document.getElementById("modalProductName").style.color = "#fff";
     modal.style.display = "flex";
 }
 
-// ====== 點商品名稱 → 彈出優惠方案 ======
+// ====== 優惠方案 modal ======
 function openPromoModal(item) {
     modalType = 'promo';
     editIndex = null;
@@ -1023,7 +1002,7 @@ function openPromoModal(item) {
     const numpad = document.getElementById("numpad");
     const modalActions = document.querySelector("#editModal .modalActions");
     const modalInput = document.getElementById("modalInput");
-    const closeBtn = document.getElementById("promoCloseBtn");
+    const closeBtn = document.getElementById("editCloseBtn");
 
     // 優惠方案專用設定
     numpad.style.display = 'none';
@@ -1057,6 +1036,7 @@ function openPromoModal(item) {
     });
 
     document.getElementById("modalProductName").innerText = item.name;
+    document.getElementById("modalProductName").style.color = "#fff";
     modal.style.display = 'flex';
 }
 
@@ -1091,39 +1071,34 @@ function confirmEdit() {
     renderCart();
 }
 
-// ====== 關閉 modal ======
+// ====== 關閉所有 modal ======
 function closeModal() {
-    const modal = document.getElementById("editModal");
-    const modalActions = document.querySelector("#editModal .modalActions");
-    const modalInput = document.getElementById("modalInput");
-    const numpad = document.getElementById("numpad");
-    const closeBtn = document.getElementById("promoCloseBtn");
-    const promoDiv = document.getElementById("promoButtons");
+    const editModal = document.getElementById("editModal");
+    const posModal = document.getElementById("posKeypadModal");
 
-    modal.style.display = 'none';
+    if (editModal.style.display === 'flex') editModal.style.display = 'none';
+    if (posModal.style.display === 'flex') posModal.style.display = 'none';
 
     // 恢復共用 modal 預設狀態
-    modalActions.style.display = 'flex';
-    modalInput.style.display = 'block';
-    modalInput.readOnly = false;
-    numpad.style.display = 'grid';
-    promoDiv.style.display = 'none';
-    closeBtn.style.display = 'none';
+    document.querySelector("#editModal .modalActions").style.display = 'flex';
+    document.getElementById("modalInput").style.display = 'block';
+    document.getElementById("modalInput").readOnly = false;
+    document.getElementById("numpad").style.display = 'grid';
+    document.getElementById("promoButtons").style.display = 'none';
+    document.getElementById("editCloseBtn").style.display = 'none';
 }
 
-// ====== POS 大鍵盤輸入 ======
+// ====== POS 大鍵盤輸入 / 刪除 / 確認 ======
 function kpInput(v) {
     const input = document.getElementById("posKeypadInput");
     input.value += v;
 }
 
-// ====== POS 大鍵盤刪除 ======
 function kpBack() {
     const input = document.getElementById("posKeypadInput");
     input.value = input.value.slice(0, -1);
 }
 
-// ====== POS 大鍵盤確認 ======
 function kpConfirm() {
     const v = Number(document.getElementById("posKeypadInput").value) || 0;
 
@@ -1137,7 +1112,6 @@ function kpConfirm() {
     closeModal();
     renderCart();
 }
-
 
   
 function setTax(t) {
