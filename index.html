@@ -135,28 +135,32 @@ button{cursor:pointer;outline:none;transition:0.2s;}
 #paymentButtons {
     display: flex;
     gap: 10px;
-    margin-bottom: 10px;
+    margin: 12px 0; /* 與下面保持一致 */
 }
 
 #paymentButtons .payBtn {
     height: 42px; /* 原 60px × 0.7 = 42px */
-    border-radius: 8px;
-    background-color: #007bff;
-    color: #fff;
+    border-radius: 6px; /* 與 taxContainer 按鈕一致 */
+    background-color: #bdc3c7; /* 初始灰色 */
+    color: #333; /* 深色文字 */
     border: none;
     flex: 1;            /* 平分寬度 */
     cursor: pointer;
     font-size: 0.9em;
+    font-weight: normal;
     transition: 0.2s;
 }
 
 #paymentButtons .payBtn:hover {
-    background-color: #0056b3;
+    background-color: #95a5a6; /* hover 稍微深一點灰 */
 }
 
 #paymentButtons .payBtn.active {
-    background-color: #28a745;
+    background-color: #f1c40f; /* 點選後變黃 */
+    color: #333;               /* 文字深色 */
+    font-weight: bold;          /* 加粗 */
 }
+
   #discountContainer, .taxRow.total, #paymentButtons {
     margin: 12px 0; /* 上下 12px */
 }
